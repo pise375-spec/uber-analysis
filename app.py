@@ -17,15 +17,27 @@ st.sidebar.header("Data Settings")
 uploaded_file = st.sidebar.file_uploader("Upload your UberDataset.csv file", type=["csv"])
 
 # Local default path fallback if no file is uploaded via the interface
-default_path = r"C:\Users\LENOVO\Downloads\main\UberDataset.csv"
+default_path = r"Uber.csv"
 
 @st.cache_data
 def load_and_clean_data(file_source):
     # Read data
     dataset = pd.read_csv(file_source)
     
-    # Data Cleaning
-    dataset['PURPOSE'].fillna("NOT", inplace=True)
+    # Clean and standardize column names (fixes case-sensitivity issues)
+    dataset.columns = dataset.columns.str.upper().str.strip()
+    
+    # Safely handle PURPOSE column
+    if 'PURPOSE' in dataset.columns:
+        dataset['PURPOSE'] = dataset['PURPOSE'].fillna("NOT")
+    else:
+        dataset['PURPOSE'] = "NOT"
+        
+    # Verify critical time columns exist
+    if 'START_DATE' not in dataset.columns or 'END_DATE' not in dataset.columns:
+        st.error("The dataset is missing 'START_DATE' or 'END_DATE' columns. Please check your CSV header names.")
+        st.stop()
+        
     dataset['START_DATE'] = pd.to_datetime(dataset['START_DATE'], errors='coerce')
     dataset['END_DATE'] = pd.to_datetime(dataset['END_DATE'], errors='coerce')
     
@@ -40,7 +52,15 @@ def load_and_clean_data(file_source):
         include_lowest=True
     )
     
-    dataset.dropna(inplace=True)
+    # Ensure vital numeric column exists
+    if 'MILES' not in dataset.columns:
+        st.error("The dataset is missing the 'MILES' column.")
+        st.stop()
+        
+    if 'CATEGORY' not in dataset.columns:
+        dataset['CATEGORY'] = "UNKNOWN"
+    
+    dataset.dropna(subset=['START_DATE', 'END_DATE'], inplace=True)
     dataset.drop_duplicates(inplace=True)
     return dataset
 
