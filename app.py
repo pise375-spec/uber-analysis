@@ -1,5 +1,4 @@
-
-import streamlit as str
+import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -146,39 +145,40 @@ st.header("📅 Temporal Breakdown Trends")
 dataset['MONTH'] = dataset['START_DATE'].dt.month
 month_label = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
 dataset['MONTH_NAME'] = dataset['MONTH'].map(month_label)
-... 
-... monthly_counts = dataset['MONTH_NAME'].value_counts(sort=False)
-... monthly_max_miles = dataset.groupby('MONTH_NAME', sort=False)['MILES'].max()
-... 
-... # Reorder indices sequentially to correct any display jumps
-... ordered_months = [m for m in month_label.values() if m in monthly_counts.index]
-... df_month = pd.DataFrame({
-...     "TOTAL RIDES": [monthly_counts[m] for m in ordered_months],
-...     "MAX MILES": [monthly_max_miles[m] for m in ordered_months]
-... }, index=ordered_months).reset_index().rename(columns={'index': 'MONTHS'})
-... 
-... # 2. Weekday Performance Charting
-... dataset['DAY'] = dataset['START_DATE'].dt.weekday
-... day_label = {0: 'Mon', 1: 'Tues', 2: 'Wed', 3: 'Thu', 4: 'Fri', 5: 'Sat', 6: 'Sun'}
-... dataset['DAY_NAME'] = dataset['DAY'].map(day_label)
-... ordered_days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-... day_counts = dataset['DAY_NAME'].value_counts().reindex(ordered_days)
-... 
-... c5, c6 = st.columns(2)
-... with c5:
-...     fig, ax = plt.subplots(figsize=(8, 4.2))
-...     sns.lineplot(data=df_month, x='MONTHS', y='TOTAL RIDES', label='Total Rides', marker='o', ax=ax)
-...     sns.lineplot(data=df_month, x='MONTHS', y='MAX MILES', label='Max Miles', marker='o', ax=ax)
-...     plt.title("Monthly Ride and Distance Trends")
-...     plt.xlabel("Month")
-...     plt.ylabel("Count / Distance")
-...     st.pyplot(fig)
-...     plt.close()
-... 
-... with c6:
-...     fig, ax = plt.subplots(figsize=(8, 4.2))
-...     sns.barplot(x=day_counts.index, y=day_counts.values, ax=ax)
-...     plt.title("Rides by Day of Week")
-...     plt.xlabel("Day")
-...     plt.ylabel("Count")
-...     st.pyplot(fig)
+
+monthly_counts = dataset['MONTH_NAME'].value_counts(sort=False)
+monthly_max_miles = dataset.groupby('MONTH_NAME', sort=False)['MILES'].max()
+
+# Reorder indices sequentially to correct any display jumps
+ordered_months = [m for m in month_label.values() if m in monthly_counts.index]
+df_month = pd.DataFrame({
+    "TOTAL RIDES": [monthly_counts[m] for m in ordered_months],
+    "MAX MILES": [monthly_max_miles[m] for m in ordered_months]
+}, index=ordered_months).reset_index().rename(columns={'index': 'MONTHS'})
+
+# 2. Weekday Performance Charting
+dataset['DAY'] = dataset['START_DATE'].dt.weekday
+day_label = {0: 'Mon', 1: 'Tues', 2: 'Wed', 3: 'Thu', 4: 'Fri', 5: 'Sat', 6: 'Sun'}
+dataset['DAY_NAME'] = dataset['DAY'].map(day_label)
+ordered_days = ['Mon', 'Tues', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+day_counts = dataset['DAY_NAME'].value_counts().reindex(ordered_days)
+
+c5, c6 = st.columns(2)
+with c5:
+    fig, ax = plt.subplots(figsize=(8, 4.2))
+    sns.lineplot(data=df_month, x='MONTHS', y='TOTAL RIDES', label='Total Rides', marker='o', ax=ax)
+    sns.lineplot(data=df_month, x='MONTHS', y='MAX MILES', label='Max Miles', marker='o', ax=ax)
+    plt.title("Monthly Ride and Distance Trends")
+    plt.xlabel("Month")
+    plt.ylabel("Count / Distance")
+    st.pyplot(fig)
+    plt.close()
+
+with c6:
+    fig, ax = plt.subplots(figsize=(8, 4.2))
+    sns.barplot(x=day_counts.index, y=day_counts.values, ax=ax)
+    plt.title("Rides by Day of Week")
+    plt.xlabel("Day")
+    plt.ylabel("Count")
+    st.pyplot(fig)
+    plt.close()
